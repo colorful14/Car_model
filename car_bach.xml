@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sspaceex xmlns="http://www-verimag.imag.fr/xml-namespaces/sspaceex" version="0.2" math="SpaceEx">
+    <component id="car_template">
+        <param name="x" type="real" local="false" d1="1" d2="1" dynamics="any" controlled="true"/>
+        <param name="vx" type="real" local="true" d1="1" d2="1" dynamics="any" controlled="true"/>
+        <param name="ax" type="real" local="true" d1="1" d2="1" dynamics="const" controlled="true"/>
+
+        <param name="x1" type="real" local="false" d1="1" d2="1" dynamics="any" controlled="false"/>
+
+        <param name="t" type="real" local="false" d1="1" d2="1" dynamics="any" controlled="false"/>
+        <param name="inner_t" type="real" local="true" d1="1" d2="1" dynamics="any" controlled="true"/>
+
+        <param name="SD" type="real" local="true" d1="1" d2="1" dynamics="const"/>
+
+
+        <param name="eINIT2IN" type="label" local="true"/>
+        <param name="eINIT2CC" type="label" local="true"/>
+        <param name="eINIT2DE" type="label" local="true"/>
+        <param name="eIN2CC" type="label" local="true"/>
+        <param name="eCC2IN" type="label" local="true"/>
+        <param name="eCC2DE" type="label" local="true"/>
+        <param name="eDE2CC" type="label" local="true"/>
+
+        <param name="eIN2IN" type="label" local="true"/>
+        <param name="eCC2CC" type="label" local="true"/>
+        <param name="eDE2DE" type="label" local="true"/>
+
+
+        <location id="1" name="INIT">
+            <flow>x'==vx &amp; t'==1&amp; inner_t'==1</flow>
+            <invariant>t==0</invariant>
+        </location>
+        <location id="2" name="IN_AC">
+            <flow>x'==vx &amp; t'==1&amp; inner_t'==1</flow>
+            <invariant>inner_t&lt;=1</invariant>
+        </location>
+        <location id="3" name="CC">
+            <flow>x'==vx &amp; t'==1&amp; inner_t'==1</flow>
+            <invariant>inner_t&lt;=1</invariant>
+        </location>
+        <location id="4" name="DE_AC">
+            <flow>x'==vx &amp; t'==1 &amp; inner_t'==1</flow>
+            <invariant>inner_t&lt;=1</invariant>
+        </location>
+
+        <transition source="1" target="2">
+            <label>eINIT2IN</label>
+            <guard>x-x1&gt;=-SD &amp; x-x1&lt;=SD &amp; x&gt;x1</guard>
+            <assignment>vx:=vx+ax &amp; ax:=ax+1 &amp; inner_t:=0</assignment>
+        </transition>
+        <transition source="1" target="3">
+            <label>eINIT2CC</label>
+            <guard>x-x1&gt;SD || x-x1&lt;-SD</guard>
+            <assignment> vx:=vx+ax &amp; ax&lt;=ax+0.05 &amp; ax&gt;=ax-0.05 &amp; inner_t:=0</assignment>
+        </transition>
+        <transition source="1" target="4">
+            <label>eINIT2DE</label>
+            <guard>x-x1&gt;=-SD &amp; x-x1&lt;=SD &amp; x&lt;=x1</guard>
+            <assignment>vx:=vx+ax &amp; ax:=ax-0.1 &amp; inner_t:=0</assignment>
+        </transition>
+        <transition source="2" target="3">
+            <label>eIN2CC</label>
+            <guard>(x-x1&gt;SD || x-x1&lt;-SD) &amp; inner_t==1</guard>
+            <assignment>vx:=vx+ax &amp; ax&lt;=ax+0.05 &amp; ax&gt;=ax-0.05 &amp; inner_t:=0</assignment>
+        </transition>
+        <transition source="3" target="2">
+            <label>eCC2IN</label>
+            <guard>x-x1&lt;SD &amp; x-x1&gt;-SD &amp; x&gt;x1 &amp; inner_t==1</guard>
+            <assignment>vx:=vx+ax &amp;ax:=ax+1&amp; inner_t:=0</assignment>
+        </transition>
+        <transition source="3" target="4">
+            <label>eCC2DE</label>
+            <guard>x-x1&lt;SD &amp; x-x1&gt;-SD &amp; x&lt;x1 &amp; inner_t==1</guard>
+            <assignment>vx:=vx+ax &amp; ax:=ax-0.1 &amp; inner_t:=0</assignment>
+        </transition>
+        <transition source="4" target="3">
+            <label>eDE2CC</label>
+            <guard>(x-x1&gt;SD || x-x1&lt;-SD) &amp; inner_t==1</guard>
+            <assignment>vx:=vx+ax &amp; ax&lt;=ax+0.05 &amp; ax&gt;=ax-0.05 &amp;inner_t:=0</assignment>
+        </transition>
+
+        <transition source="2" target="2">
+            <label>eIN2IN</label>
+            <guard>x-x1&lt;SD &amp; x-x1&gt;-SD  &amp; inner_t==1</guard>
+            <assignment>vx:=vx+ax &amp;ax:=ax+1&amp; inner_t:=0</assignment>
+        </transition>
+        <transition source="3" target="3">
+            <label>eCC2CC</label>
+            <guard>(x-x1&gt;SD || x-x1&lt;-SD) &amp; inner_t==1</guard>
+            <assignment>vx:=vx+ax &amp; ax&lt;=ax+0.05 &amp; ax&gt;=ax-0.05 &amp; inner_t:=0</assignment>
+        </transition>
+        <transition source="4" target="4">
+            <label>eDE2DE</label>
+            <guard>x-x1&lt;SD &amp; x-x1&gt;-SD  &amp; inner_t==1</guard>
+            <assignment>vx:=vx+ax &amp; ax:=ax-0.1 &amp; inner_t:=0</assignment>
+        </transition>
+    </component>
+    <component id="Clock">
+        <param name="t" type="real" local="false" d1="1" d2="1" dynamics="any"/>
+        <param name="inner_t" type="real" local="true" d1="1" d2="1" dynamics="any" controlled="true"/>
+        <location id="1" name="Cycle">
+            <flow>t'==1</flow>
+            <invariant>inner_t&lt;=1</invariant>
+        </location>
+        <transition source="1" target="1">
+            <guard>inner_t==1</guard>
+            <assignment>inner_t:=0</assignment>
+        </transition>
+    </component>
+
+    <component id="system">
+        <param name="x1" type="real" local="false" d1="1" d2="1" dynamics="any" controlled="true"/>
+        <param name="x2" type="real" local="false" d1="1" d2="1" dynamics="any" controlled="true"/>
+        <param name="t" type="real" local="false" d1="1" d2="1" dynamics="any" controlled="false"/>
+
+        <bind component="car_template" as="car_1">
+            <map key="t">t</map>
+            <map key="x">x1</map>
+            <map key="x1">x2</map>
+            <map key="SD">20.0</map>
+        </bind>
+        <bind component="car_template" as="car_2">
+            <map key="t">t</map>
+            <map key="x">x2</map>
+            <map key="x1">x1</map>
+            <map key="SD">20.0</map>
+        </bind>
+        <bind component="Clock" as="clock">
+            <map key="t">t</map>
+        </bind>
+    </component>
+</sspaceex>
+
